@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سِفْر - ديوان أدبي خاص للمشاعر والقصائد</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Amiri, Cairo, Scheherazade New -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;600;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            300: '#FDE047',
+                            400: '#E6C665',
+                            500: '#D4AF37',
+                            600: '#AA8828',
+                        },
+                        royal: {
+                            800: '#1a0f28',
+                            900: '#120b1c',
+                            950: '#0a0512',
+                        }
+                    },
+                    fontFamily: {
+                        amiri: ['Amiri', 'serif'],
+                        cairo: ['Cairo', 'sans-serif'],
+                        scheherazade: ['Scheherazade New', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Amiri', serif;
+            background-color: #0a0512;
+            color: #F8FAFC;
+            background-image: radial-gradient(rgba(212, 175, 55, 0.05) 1px, transparent 0);
+            background-size: 28px 28px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0512;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D4AF37;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #AA8828;
+        }
+
+        /* Gold Gradient Text */
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #FFF099 0%, #D4AF37 50%, #9A7B1C 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Poem Verse styling */
+        .verse-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem 0;
+            border-bottom: 1px dotted rgba(212, 175, 55, 0.15);
+            transition: background 0.3s ease;
+        }
+        .verse-row:hover {
+            background-color: rgba(212, 175, 55, 0.04);
+        }
+
+        /* Custom Toast Notification */
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        .toast {
+            animation: fadeInOut 3s forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-gold-500 selection:text-royal-950">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2"></div>
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-royal-950/90 backdrop-blur-md border-b border-gold-500/20 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Site Logo / Name -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('home')">
+                    <div>
+                        <h1 class="text-4xl font-bold font-scheherazade gold-gradient-text tracking-wide" id="navPoetName">سِفْرٌ</h1>
+                        <p class="text-xs text-gray-400 -mt-1 font-amiri">ديوان أدبي خاص للمشاعر والقصائد</p>
+                    </div>
+                </div>
+
+                <!-- Nav Links -->
+                <nav class="hidden md:flex items-center gap-8 text-lg font-amiri">
+                    <button onclick="switchTab('home')" id="nav-home" class="nav-btn text-gold-400 font-bold border-b-2 border-gold-500 pb-1 transition-all">الرئيسية</button>
+                    <button onclick="switchTab('showcase')" id="nav-showcase" class="nav-btn text-gray-300 hover:text-gold-400 transition-all">الديوان الشعري</button>
+                    <button onclick="switchTab('about')" id="nav-about" class="nav-btn text-gray-300 hover:text-gold-400 transition-all">عن سِفر</button>
+                    <button onclick="switchTab('hosting-guide')" id="nav-hosting" class="nav-btn text-emerald-400 hover:text-emerald-300 transition-all"><i class="fa-solid fa-rocket ml-1"></i>نشر الموقع مجاناً</button>
+                </nav>
+
+                <!-- Admin Mode Switcher -->
+                <div class="flex items-center gap-3">
+                    <button id="adminToggleBtn" onclick="toggleAdminMode()" class="bg-royal-800 hover:bg-gold-500 hover:text-royal-950 text-gold-400 border border-gold-500/40 px-4 py-2 rounded-full font-cairo text-sm transition-all flex items-center gap-2 shadow-md">
+                        <i class="fa-solid fa-user-lock"></i>
+                        <span id="adminBtnText">دخول الشاعر</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Status Banner -->
+    <div id="adminBanner" class="hidden bg-gold-500/10 border-b border-gold-500/30 py-2 px-4 text-center font-cairo text-sm text-gold-400 flex items-center justify-center gap-4">
+        <span><i class="fa-solid fa-pen-fancy ml-2"></i>أنت الآن في <b>وضع إدارة الديوان</b>. يمكنك إضافة وتعديل وحذف القصائد.</span>
+        <button onclick="switchTab('admin-panel')" class="bg-gold-500 text-royal-950 px-3 py-1 rounded text-xs font-bold hover:bg-gold-400 transition-all">لوحة التحكم</button>
+    </div>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
+
+        <!-- ================= HERO / HOME TAB ================= -->
+        <section id="tab-home" class="tab-content space-y-12">
+            <!-- Hero Banner -->
+            <div class="relative rounded-3xl overflow-hidden border border-gold-500/30 bg-gradient-to-b from-royal-800 to-royal-950 p-8 md:p-16 text-center shadow-2xl">
+                <div class="relative z-10 max-w-3xl mx-auto space-y-6">
+                    
+                    <h1 class="text-7xl md:text-9xl font-bold font-scheherazade text-slate-100 leading-none">
+                        <span class="gold-gradient-text" id="heroPoetName">سِفْرٌ</span>
+                    </h1>
+                    
+                    <p class="text-gray-300 text-lg md:text-2xl font-amiri leading-relaxed italic" id="heroPoetBio">
+                        "ديوان أدبي خاص للمشاعر والقصائد، يجمع ترانيم الشعر الحر ونفحات الغزل"
+                    </p>
+
+                    <div class="flex flex-wrap justify-center gap-4 pt-4">
+                        <button onclick="switchTab('showcase')" class="bg-gold-500 hover:bg-gold-400 text-royal-950 px-8 py-3 rounded-full font-bold font-cairo shadow-lg transition-all transform hover:-translate-y-1">
+                            تصفح صفحات السِّفْر
+                        </button>
+                        <button onclick="switchTab('about')" class="border border-gold-500/50 hover:bg-gold-500/10 text-gold-400 px-8 py-3 rounded-full font-bold font-cairo transition-all">
+                            عن سِفْر
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Selection -->
+            <div class="space-y-6">
+                <h2 class="text-2xl font-bold font-cairo text-gold-400 flex items-center gap-2">
+                    <i class="fa-solid fa-feather-pointed text-sm"></i> أقسام الديوان
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    <button onclick="filterCategory('الشعر الحر')" class="p-6 rounded-2xl border border-gold-500/30 bg-royal-900/80 hover:border-gold-500 hover:bg-royal-800 transition-all text-center group shadow-lg">
+                        <i class="fa-solid fa-lines-leaning text-gold-400 text-4xl mb-3 group-hover:scale-110 transition-transform"></i>
+                        <h3 class="font-bold font-cairo text-slate-100 text-xl">الشعر الحر</h3>
+                        <p class="text-xs text-gray-400 font-amiri mt-1">قصائد التفعيلة والأبيات الحرة المعاصرة</p>
+                    </button>
+                    <button onclick="filterCategory('الغزل')" class="p-6 rounded-2xl border border-gold-500/30 bg-royal-900/80 hover:border-gold-500 hover:bg-royal-800 transition-all text-center group shadow-lg">
+                        <i class="fa-solid fa-feather-pointed text-gold-400 text-4xl mb-3 group-hover:scale-110 transition-transform"></i>
+                        <h3 class="font-bold font-cairo text-slate-100 text-xl">الغزل</h3>
+                        <p class="text-xs text-gray-400 font-amiri mt-1">أبيات العشق والشوق ونفحات الوجدان</p>
+                    </button>
+                    <button onclick="filterCategory('غير ذلك')" class="p-6 rounded-2xl border border-gold-500/30 bg-royal-900/80 hover:border-gold-500 hover:bg-royal-800 transition-all text-center group shadow-lg">
+                        <i class="fa-solid fa-bookmark text-gold-400 text-4xl mb-3 group-hover:scale-110 transition-transform"></i>
+                        <h3 class="font-bold font-cairo text-slate-100 text-xl">غير ذلك</h3>
+                        <p class="text-xs text-gray-400 font-amiri mt-1">خواطر، نصوص نثريّة، وكتابات أُخرى</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Poems -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold font-cairo text-gold-400">أحدث القصائد</h2>
+                    <button onclick="switchTab('showcase')" class="text-gold-400 text-sm font-cairo hover:underline">عرض الكل &larr;</button>
+                </div>
+                <div id="recentPoemsList" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Dynamic Recent Poems -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= POETRY SHOWCASE TAB ================= -->
+        <section id="tab-showcase" class="tab-content hidden space-y-6">
+            <!-- Controls -->
+            <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-royal-900 p-4 rounded-xl border border-gold-500/20 shadow-md">
+                <div class="relative w-full md:w-96">
+                    <input type="text" id="searchInput" oninput="filterPoems()" placeholder="ابحث في أوراق وعناوين القصائد..." 
+                        class="w-full bg-royal-950 border border-gold-500/30 rounded-lg px-4 py-2 text-slate-100 placeholder-gray-500 focus:outline-none focus:border-gold-400 pr-10 font-amiri">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gold-500/70"></i>
+                </div>
+
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <span class="text-sm text-gray-400 font-cairo">القسم:</span>
+                    <select id="categoryFilter" onchange="filterPoems()" class="bg-royal-950 border border-gold-500/30 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:border-gold-400 font-amiri">
+                        <option value="الكل">الكل</option>
+                        <option value="الشعر الحر">الشعر الحر</option>
+                        <option value="الغزل">الغزل</option>
+                        <option value="غير ذلك">غير ذلك</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Poems Grid -->
+            <div id="poemsContainer" class="grid grid-cols-1 gap-8">
+                <!-- Poems dynamically injected -->
+            </div>
+        </section>
+
+        <!-- ================= POEM READER MODAL ================= -->
+        <div id="poemReaderModal" class="fixed inset-0 z-50 bg-royal-950/90 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-royal-900 border border-gold-500/40 rounded-2xl max-w-3xl w-full p-6 md:p-10 relative shadow-2xl space-y-6 my-8">
+                <button onclick="closePoemReader()" class="absolute top-4 left-4 text-gray-400 hover:text-gold-400 text-2xl transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <div class="text-center space-y-2 border-b border-gold-500/20 pb-4">
+                    <span id="readerCategory" class="text-xs font-cairo bg-gold-500/10 text-gold-400 px-3 py-1 rounded-full border border-gold-500/30"></span>
+                    <h2 id="readerTitle" class="text-3xl md:text-5xl font-bold font-scheherazade text-gold-400 pt-2"></h2>
+                    <p id="readerDate" class="text-xs text-gray-400 font-cairo"></p>
+                </div>
+
+                <div id="readerVerses" class="font-amiri text-xl md:text-2xl text-slate-100 space-y-4 py-4 max-h-[60vh] overflow-y-auto px-2">
+                    <!-- Full verses rendered here -->
+                </div>
+
+                <div class="flex justify-end items-center pt-4 border-t border-gold-500/20 gap-3">
+                    <button id="readerCopyBtn" class="bg-royal-800 hover:bg-gold-500 hover:text-royal-950 text-gold-400 px-4 py-2 rounded-lg font-cairo text-sm transition-all border border-gold-500/30">
+                        <i class="fa-regular fa-copy ml-1"></i> نسخ القصيدة
+                    </button>
+                    <button onclick="closePoemReader()" class="bg-slate-800 hover:bg-slate-700 text-gray-300 px-4 py-2 rounded-lg font-cairo text-sm">
+                        إغلاق
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= ADMIN PANEL / EDITOR TAB ================= -->
+        <section id="tab-admin-panel" class="tab-content hidden space-y-8">
+            <div class="bg-royal-900 border border-gold-500/30 rounded-2xl p-6 md:p-8 shadow-2xl space-y-8">
+                
+                <!-- Admin Header & Backup Controls -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gold-500/20 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold font-cairo gold-gradient-text">لوحة إدارة ديوان "سِفْر"</h2>
+                        <p class="text-xs text-gray-400 mt-1 font-amiri">إدارة الأبيات والقصائد وحفظ النسخ الاحتياطية للديوان</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="exportData()" class="bg-royal-950 hover:bg-royal-800 text-gold-400 border border-gold-500/30 px-3 py-1.5 rounded text-xs font-cairo">
+                            <i class="fa-solid fa-download ml-1"></i>تصدير الديوان (JSON)
+                        </button>
+                        <label class="bg-royal-950 hover:bg-royal-800 text-gold-400 border border-gold-500/30 px-3 py-1.5 rounded text-xs font-cairo cursor-pointer">
+                            <i class="fa-solid fa-upload ml-1"></i>استيراد
+                            <input type="file" id="importFileInput" onchange="importData(event)" accept=".json" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Poet Profile Settings Form -->
+                <div class="bg-royal-950 p-4 rounded-xl border border-gold-500/20 space-y-4">
+                    <h3 class="font-cairo font-bold text-gold-400 text-sm"><i class="fa-solid fa-user-pen ml-1"></i>تعديل معلومات وتفاصيل الديوان</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="editPoetName" placeholder="عنوان الديوان (مثال: سِفْر)" class="bg-royal-900 border border-gold-500/30 rounded p-2 text-slate-100 font-amiri text-sm">
+                        <input type="text" id="editPoetBio" placeholder="المقدمة أو الوصف الناجز" class="bg-royal-900 border border-gold-500/30 rounded p-2 text-slate-100 font-amiri text-sm">
+                        <input type="password" id="editPoetPin" placeholder="تغيير رمز PIN لدخول الشاعر" class="bg-royal-900 border border-gold-500/30 rounded p-2 text-slate-100 font-amiri text-sm md:col-span-2">
+                    </div>
+                    <button onclick="savePoetProfile()" class="bg-gold-500 hover:bg-gold-400 text-royal-950 px-4 py-1.5 rounded font-cairo text-xs font-bold">
+                        حفظ البيانات
+                    </button>
+                </div>
+
+                <!-- Poem Creation/Editing Form -->
+                <form id="poemForm" onsubmit="savePoem(event)" class="space-y-6 pt-4">
+                    <h3 class="text-xl font-bold font-cairo text-gold-400 border-b border-gold-500/20 pb-2" id="formTitle">إضافة قصيدة جديدة إلى "سِفْر"</h3>
+                    <input type="hidden" id="editingPoemId" value="">
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-cairo text-gold-400 mb-1">عنوان القصيدة *</label>
+                            <input type="text" id="poemTitle" required placeholder="عنوان القصيدة"
+                                class="w-full bg-royal-950 border border-gold-500/30 rounded-lg p-3 text-slate-100 focus:outline-none focus:border-gold-400 font-amiri">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-cairo text-gold-400 mb-1">التصنيف *</label>
+                            <select id="poemCategory" required class="w-full bg-royal-950 border border-gold-500/30 rounded-lg p-3 text-slate-100 focus:outline-none focus:border-gold-400 font-amiri">
+                                <option value="الشعر الحر">الشعر الحر</option>
+                                <option value="الغزل">الغزل</option>
+                                <option value="غير ذلك">غير ذلك</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-cairo text-gold-400 mb-1">البحر الشعري / النوع (اختياري)</label>
+                            <input type="text" id="poemMeter" placeholder="مثال: الطويل، التفعيلة، خاطرة..."
+                                class="w-full bg-royal-950 border border-gold-500/30 rounded-lg p-3 text-slate-100 focus:outline-none focus:border-gold-400 font-amiri">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-cairo text-gold-400 mb-1">نمط الأبيات</label>
+                            <div class="flex gap-4 pt-2">
+                                <label class="flex items-center gap-2 text-sm font-amiri cursor-pointer">
+                                    <input type="radio" name="poemStyle" value="free-verse" checked onclick="toggleStyleMode('free-verse')" class="accent-gold-500">
+                                    <span>شعر حر / أسطر متتالية</span>
+                                </label>
+                                <label class="flex items-center gap-2 text-sm font-amiri cursor-pointer">
+                                    <input type="radio" name="poemStyle" value="two-columns" onclick="toggleStyleMode('two-columns')" class="accent-gold-500">
+                                    <span>شعر عمودي (صدر وعجز)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Verses List -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-xs font-cairo text-gold-400">أبيات / أسطر القصيدة *</label>
+                        </div>
+
+                        <div id="versesList" class="space-y-3">
+                            <!-- Dynamic verses -->
+                        </div>
+
+                        <button type="button" onclick="addVerseInput()" class="w-full py-2 border border-dashed border-gold-500/40 hover:border-gold-400 text-gold-400 rounded-lg font-cairo text-xs transition-all">
+                            <i class="fa-solid fa-plus ml-1"></i>إضافة سطر / بيت آخر
+                        </button>
+                    </div>
+
+                    <div class="flex gap-4 pt-4">
+                        <button type="submit" class="flex-1 bg-gold-500 hover:bg-gold-400 text-royal-950 font-bold font-cairo py-3 rounded-lg shadow-lg transition-all">
+                            <i class="fa-solid fa-floppy-disk ml-1"></i> حفظ وتدوين القصيدة
+                        </button>
+                        <button type="button" onclick="resetForm()" class="bg-slate-800 hover:bg-slate-700 text-gray-300 font-cairo px-6 py-3 rounded-lg">
+                            إلغاء
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= ABOUT DIWAN TAB ================= -->
+        <section id="tab-about" class="tab-content hidden max-w-4xl mx-auto space-y-8">
+            <div class="bg-royal-900 border border-gold-500/30 rounded-2xl p-8 md:p-12 shadow-2xl relative overflow-hidden text-center space-y-6">
+                <span class="text-xs font-cairo bg-gold-500/10 text-gold-400 px-4 py-1.5 rounded-full border border-gold-500/30">الديوان الشخصي</span>
+                <h2 class="text-5xl md:text-6xl font-bold font-scheherazade text-slate-100 gold-gradient-text" id="aboutPoetName">سِفْرٌ</h2>
+                <p class="text-gray-300 font-amiri text-xl leading-relaxed max-w-2xl mx-auto" id="aboutPoetBio">
+                    ديوان أدبي خاص للمشاعر والقصائد، يجمع ترانيم الشعر الحر ونفحات الغزل.
+                </p>
+                
+                <div class="pt-4 flex flex-wrap gap-6 justify-center">
+                    <div class="bg-royal-950 px-6 py-3 rounded-xl border border-gold-500/20 shadow-md">
+                        <span class="block text-2xl font-bold font-cairo text-gold-400" id="totalPoemsAbout">0</span>
+                        <span class="text-xs text-gray-400 font-amiri">قصيدة مسجلة</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= HOSTING GUIDE TAB ================= -->
+        <section id="tab-hosting-guide" class="tab-content hidden max-w-4xl mx-auto space-y-8">
+            <div class="bg-royal-900 border border-gold-500/30 rounded-2xl p-8 shadow-2xl space-y-6">
+                <div class="border-b border-gold-500/20 pb-4">
+                    <h2 class="text-3xl font-bold font-cairo gold-gradient-text">طريقة نشر موقع "سِفْر" مجاناً للعالم</h2>
+                    <p class="text-gray-400 font-amiri text-sm mt-1">خطوات سهلة وسريعة لجعل هذا الديوان متاحاً أونلاين برابط خاص بك مدى الحياة مجاناً.</p>
+                </div>
+
+                <div class="space-y-6 text-gray-200 font-amiri text-lg">
+                    <div class="space-y-2">
+                        <h3 class="text-xl font-bold font-cairo text-gold-400 flex items-center gap-2">
+                            <i class="fa-solid fa-bolt text-emerald-400"></i> الطريقة الأولى: Netlify Drop (بدون كود خلال 30 ثانية)
+                        </h3>
+                        <ol class="list-decimal list-inside space-y-2 text-base text-gray-300 pr-4">
+                            <li>احفظ هذا الكود في ملف باسم <code class="bg-royal-950 text-gold-300 px-2 py-0.5 rounded">index.html</code> على جهازك داخل مجلد جديد.</li>
+                            <li>افتح موقع <a href="https://app.netlify.com/drop" target="_blank" class="text-gold-400 underline font-bold">Netlify Drop</a>.</li>
+                            <li>اسحب المجلد وأسقطه داخل المستطيل المخصص في الموقع.</li>
+                            <li>سيعطيك الموقع فوراً رابطاً مجانياً مباشراً لديوانك الشعري!</li>
+                        </ol>
+                    </div>
+
+                    <div class="space-y-2 pt-4 border-t border-gold-500/10">
+                        <h3 class="text-xl font-bold font-cairo text-gold-400 flex items-center gap-2">
+                            <i class="fa-brands fa-github"></i> الطريقة الثانية: GitHub Pages
+                        </h3>
+                        <ol class="list-decimal list-inside space-y-2 text-base text-gray-300 pr-4">
+                            <li>أنشئ حساباً مجانياً على موقع <a href="https://github.com" target="_blank" class="text-gold-400 underline">GitHub.com</a>.</li>
+                            <li>أنشئ مستودعاً جديداً (New Repository) باسم <code class="bg-royal-950 text-gold-300 px-2 py-0.5 rounded">safar</code>.</li>
+                            <li>ارفع ملف <code class="bg-royal-950 text-gold-300 px-2 py-0.5 rounded">index.html</code> إليه.</li>
+                            <li>اذهب إلى <b>Settings</b> &rarr; <b>Pages</b> واختر فرع <b>main</b> واضغط <b>Save</b>.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gold-500/20 bg-royal-950 py-8 text-center text-gray-400 font-amiri mt-12">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <div class="text-gold-500 text-3xl font-scheherazade" id="footerPoetName">سِفْرٌ</div>
+            <p class="text-xs text-gray-500">جميع الحقوق محفوظة للديوان الشعري &copy; <span id="year"></span></p>
+        </div>
+    </footer>
+
+    <!-- PIN Authentication Modal -->
+    <div id="pinModal" class="fixed inset-0 bg-royal-950/90 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-royal-900 border border-gold-500/30 p-6 rounded-2xl max-w-sm w-full space-y-4 text-center shadow-2xl">
+            <i class="fa-solid fa-lock text-3xl text-gold-400"></i>
+            <h3 class="text-lg font-bold font-cairo text-slate-100">دخول الشاعر - سِفْر</h3>
+            <p class="text-xs text-gray-400 font-amiri">أدخل رمز PIN لإدارة وتعديل قصائد الديوان</p>
+            <input type="password" id="pinInput" placeholder="أدخل الرمز" class="w-full bg-royal-950 border border-gold-500/30 rounded p-2 text-center text-xl font-mono text-gold-400 focus:outline-none">
+            <div class="flex gap-2">
+                <button onclick="verifyPin()" class="flex-1 bg-gold-500 text-royal-950 font-bold font-cairo py-2 rounded">دخول</button>
+                <button onclick="closePinModal()" class="bg-slate-800 text-gray-300 font-cairo px-4 py-2 rounded">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Default Poet Profile with PIN Code: 20071120Zz
+        const defaultProfile = {
+            name: "سِفْرٌ",
+            bio: "ديوان أدبي خاص للمشاعر والقصائد، يجمع ترانيم الشعر الحر ونفحات الغزل.",
+            pin: "20071120Zz"
+        };
+
+        // Default Initial Poems
+        const defaultPoems = [
+            {
+                id: "p1",
+                title: "مَطْلَعُ السِّفْرِ",
+                category: "الشعر الحر",
+                meter: "تفعيلة",
+                date: "2026-10-22",
+                style: "free-verse",
+                verses: [
+                    { chest: "خَطَّتْ عَلَى وَرَقِ الزَّمَانِ حُرُوفَهَا" },
+                    { chest: "فَتَنَفَّسَتْ طِيباً أَرِيضَ الْمَحْفِلِ" },
+                    { chest: "يَا سِفْرُ بَلِّغْ مَنْ أَتَاكَ تَحِيَّةً" },
+                    { chest: "تَشْفِي مَنَاطَ الشَّوْقِ عِنْدَ الْمُقْبِلِ" }
+                ]
+            },
+            {
+                id: "p2",
+                title: "نَجْوَى العِشْقِ",
+                category: "الغزل",
+                meter: "البسيط",
+                date: "2026-10-20",
+                style: "two-columns",
+                verses: [
+                    { chest: "يا نَسْمَةً سَرَتْ مِنْ طِيبِ مَرْبَعِكُمْ", عجوز: "حَمَلْتِ شَوْقاً لَذِيذاً لَيْسَ يَنْطَفِئُ" },
+                    { chest: "فِي كُلِّ بَيْتٍ شُعَاعٌ مِنْ مَوَدَّتِكُمْ", عجوز: "وَفِي الفُؤَادِ حَنِينٌ لَيْسَ يُخْتَبَأُ" }
+                ]
+            }
+        ];
+
+        let profile = defaultProfile;
+        let poems = [];
+        let isAdminLoggedIn = false;
+
+        window.onload = function() {
+            loadStoredData();
+            updateProfileUI();
+            renderPoems();
+            renderRecentPoems();
+            addVerseInput();
+        };
+
+        function loadStoredData() {
+            const savedProfile = localStorage.getItem('safar_poet_profile');
+            if (savedProfile) {
+                profile = JSON.parse(savedProfile);
+                if (profile.name.includes('زينب')) profile.name = 'سِفْرٌ';
+                profile.pin = "20071120Zz"; // Updated PIN override
+            }
+
+            const savedPoems = localStorage.getItem('safar_poet_poems');
+            if (savedPoems) {
+                poems = JSON.parse(savedPoems);
+            } else {
+                poems = defaultPoems;
+                savePoemsToStorage();
+            }
+        }
+
+        function savePoemsToStorage() {
+            localStorage.setItem('safar_poet_poems', JSON.stringify(poems));
+            updateStats();
+        }
+
+        function saveProfileToStorage() {
+            localStorage.setItem('safar_poet_profile', JSON.stringify(profile));
+            updateProfileUI();
+        }
+
+        function updateProfileUI() {
+            document.getElementById('navPoetName').innerText = profile.name;
+            document.getElementById('heroPoetName').innerText = profile.name;
+            document.getElementById('heroPoetBio').innerText = `"${profile.bio}"`;
+            document.getElementById('aboutPoetName').innerText = profile.name;
+            document.getElementById('aboutPoetBio').innerText = profile.bio;
+            document.getElementById('footerPoetName').innerText = profile.name;
+
+            document.getElementById('editPoetName').value = profile.name;
+            document.getElementById('editPoetBio').value = profile.bio;
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('totalPoemsAbout').innerText = poems.length;
+        }
+
+        // Admin Mode Authentication
+        function toggleAdminMode() {
+            if (isAdminLoggedIn) {
+                isAdminLoggedIn = false;
+                document.getElementById('adminBanner').classList.add('hidden');
+                document.getElementById('adminBtnText').innerText = "دخول الشاعر";
+                showToast("تم الخروج من وضع الإدارة", "info");
+                switchTab('home');
+            } else {
+                document.getElementById('pinModal').classList.remove('hidden');
+                document.getElementById('pinInput').focus();
+            }
+        }
+
+        function closePinModal() {
+            document.getElementById('pinModal').classList.add('hidden');
+            document.getElementById('pinInput').value = '';
+        }
+
+        function verifyPin() {
+            const pin = document.getElementById('pinInput').value;
+            if (pin === profile.pin) {
+                isAdminLoggedIn = true;
+                closePinModal();
+                document.getElementById('adminBanner').classList.remove('hidden');
+                document.getElementById('adminBtnText').innerText = "خروج الشاعر";
+                showToast("أهلاً بك! تم تفعيل وضع إدارة سِفْر.", "success");
+                switchTab('admin-panel');
+                renderPoems();
+            } else {
+                showToast("رمز PIN غير صحيح!", "warning");
+            }
+        }
+
+        function savePoetProfile() {
+            profile.name = document.getElementById('editPoetName').value.trim() || profile.name;
+            profile.bio = document.getElementById('editPoetBio').value.trim() || profile.bio;
+            
+            const newPin = document.getElementById('editPoetPin').value.trim();
+            if (newPin) profile.pin = newPin;
+
+            saveProfileToStorage();
+            showToast("تم تحديث معلومات الديوان بنجاح", "success");
+        }
+
+        // Navigation Tabs Switcher
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('text-gold-400', 'font-bold', 'border-b-2', 'border-gold-500'));
+
+            const selected = document.getElementById(`tab-${tabName}`);
+            if (selected) selected.classList.remove('hidden');
+
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeNav) activeNav.classList.add('text-gold-400', 'font-bold', 'border-b-2', 'border-gold-500');
+
+            if (tabName === 'showcase') renderPoems();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render Recent Poems on Home
+        function renderRecentPoems() {
+            const list = document.getElementById('recentPoemsList');
+            const recents = poems.slice(0, 2);
+            list.innerHTML = recents.map(p => `
+                <div class="bg-royal-900 border border-gold-500/20 rounded-2xl p-6 hover:border-gold-500/50 transition-all cursor-pointer shadow-lg" onclick="openPoemReader('${p.id}')">
+                    <span class="text-xs font-cairo text-gold-400 bg-gold-500/10 px-3 py-1 rounded-full border border-gold-500/20">${p.category}</span>
+                    <h3 class="text-2xl font-bold font-scheherazade text-gold-400 my-3">${p.title}</h3>
+                    <p class="text-gray-300 font-amiri text-lg line-clamp-2">${p.verses[0]?.chest || ''} ...</p>
+                </div>
+            `).join('');
+        }
+
+        // Render Showcase Poems
+        function renderPoems(filteredList = null) {
+            const container = document.getElementById('poemsContainer');
+            const listToRender = filteredList || poems;
+
+            if (listToRender.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 py-12 font-amiri text-xl">لا توجد قصائد مطابقة في هذا القسم.</p>`;
+                return;
+            }
+
+            container.innerHTML = listToRender.map(poem => {
+                const isTwoCols = poem.style === 'two-columns';
+                let iconClass = 'fa-lines-leaning';
+                if (poem.category === 'الغزل') iconClass = 'fa-feather-pointed';
+                if (poem.category === 'غير ذلك') iconClass = 'fa-bookmark';
+
+                return `
+                <article class="bg-royal-900 border border-gold-500/20 rounded-2xl p-6 md:p-8 shadow-xl relative hover:border-gold-500/40 transition-all">
+                    <div class="flex justify-between items-center mb-4 border-b border-gold-500/10 pb-3">
+                        <span class="text-xs font-cairo text-gold-400 bg-gold-500/10 px-3 py-1 rounded-full border border-gold-500/20 flex items-center gap-1">
+                            <i class="fa-solid ${iconClass} text-xs"></i>
+                            ${poem.category}
+                        </span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-400 font-cairo">${poem.date || ''}</span>
+                            ${isAdminLoggedIn ? `
+                                <button onclick="editPoem('${poem.id}')" class="text-blue-400 hover:text-blue-300 text-xs px-1"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deletePoem('${poem.id}')" class="text-red-400 hover:text-red-300 text-xs px-1"><i class="fa-solid fa-trash"></i></button>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <h3 class="text-3xl md:text-4xl font-bold font-scheherazade text-gold-400 text-center mb-6 cursor-pointer hover:underline" onclick="openPoemReader('${poem.id}')">
+                        ${poem.title}
+                    </h3>
+
+                    <div class="max-w-3xl mx-auto font-amiri text-lg md:text-xl text-slate-100 space-y-2 my-4">
+                        ${poem.verses.slice(0, 4).map(v => {
+                            if (isTwoCols && v.عجوز) {
+                                return `<div class="verse-row flex-col sm:flex-row gap-2">
+                                    <span class="w-full sm:w-1/2 text-center sm:text-left px-2">${v.chest}</span>
+                                    <span class="text-gold-500/60 text-xs hidden sm:inline">✤</span>
+                                    <span class="w-full sm:w-1/2 text-center sm:text-right px-2">${v.عجوز}</span>
+                                </div>`;
+                            } else {
+                                return `<div class="text-center py-1"><span>${v.chest}</span></div>`;
+                            }
+                        }).join('')}
+                        ${poem.verses.length > 4 ? `<p class="text-center text-xs text-gold-400 pt-3 cursor-pointer hover:underline" onclick="openPoemReader('${poem.id}')">قراءة باقي القصيدة (${poem.verses.length} بيتاً) &larr;</p>` : ''}
+                    </div>
+
+                    <div class="flex items-center justify-end pt-4 border-t border-gold-500/10 text-xs font-cairo">
+                        <button onclick="openPoemReader('${poem.id}')" class="text-gold-400 hover:underline">فتح الصفحة</button>
+                    </div>
+                </article>`;
+            }).join('');
+        }
+
+        // Search and Filter Logic
+        function filterPoems() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+
+            const filtered = poems.filter(p => {
+                const matchCat = (category === 'الكل') || (p.category === category);
+                const matchQuery = p.title.toLowerCase().includes(query) || p.verses.some(v => v.chest.includes(query) || (v.عجوز && v.عجوز.includes(query)));
+                return matchCat && matchQuery;
+            });
+            renderPoems(filtered);
+        }
+
+        function filterCategory(catName) {
+            document.getElementById('categoryFilter').value = catName;
+            switchTab('showcase');
+            filterPoems();
+        }
+
+        // Poem Reader Dialog Modal
+        function openPoemReader(id) {
+            const poem = poems.find(p => p.id === id);
+            if (!poem) return;
+
+            document.getElementById('readerTitle').innerText = poem.title;
+            document.getElementById('readerCategory').innerText = poem.category;
+            document.getElementById('readerDate').innerText = poem.date ? `تاريخ النشر: ${poem.date}` : '';
+
+            const versesContainer = document.getElementById('readerVerses');
+            const isTwoCols = poem.style === 'two-columns';
+
+            versesContainer.innerHTML = poem.verses.map(v => {
+                if (isTwoCols && v.عجوز) {
+                    return `<div class="verse-row flex-col sm:flex-row gap-2">
+                        <span class="w-full sm:w-1/2 text-center sm:text-left px-2">${v.chest}</span>
+                        <span class="text-gold-500/60 text-xs hidden sm:inline">✤</span>
+                        <span class="w-full sm:w-1/2 text-center sm:text-right px-2">${v.عجوز}</span>
+                    </div>`;
+                } else {
+                    return `<div class="text-center py-1"><span>${v.chest}</span></div>`;
+                }
+            }).join('');
+
+            document.getElementById('readerCopyBtn').onclick = () => copyPoemText(id);
+            document.getElementById('poemReaderModal').classList.remove('hidden');
+        }
+
+        function closePoemReader() {
+            document.getElementById('poemReaderModal').classList.add('hidden');
+        }
+
+        // Verses Form Dynamic Handling
+        let currentEditorStyle = 'free-verse';
+        function toggleStyleMode(mode) {
+            currentEditorStyle = mode;
+            document.querySelectorAll('.ajuz-input').forEach(i => mode === 'free-verse' ? i.classList.add('hidden') : i.classList.remove('hidden'));
+        }
+
+        function addVerseInput(chestVal = '', ajuzVal = '') {
+            const list = document.getElementById('versesList');
+            const row = document.createElement('div');
+            row.className = 'verse-input-row flex gap-2 items-center bg-royal-950 p-2 rounded border border-gold-500/20';
+            row.innerHTML = `
+                <input type="text" value="${chestVal}" placeholder="السطر / الصدر" class="chest-input flex-1 bg-royal-900 border border-gold-500/20 rounded p-2 text-slate-100 font-amiri text-sm">
+                <input type="text" value="${ajuzVal}" placeholder="العجوز" class="ajuz-input ${currentEditorStyle === 'free-verse' ? 'hidden' : ''} flex-1 bg-royal-900 border border-gold-500/20 rounded p-2 text-slate-100 font-amiri text-sm">
+                <button type="button" onclick="this.closest('.verse-input-row').remove()" class="text-red-400 p-2"><i class="fa-solid fa-trash"></i></button>
+            `;
+            list.appendChild(row);
+        }
+
+        function resetForm() {
+            document.getElementById('poemForm').reset();
+            document.getElementById('editingPoemId').value = '';
+            document.getElementById('formTitle').innerText = 'إضافة قصيدة جديدة إلى "سِفْر"';
+            document.getElementById('versesList').innerHTML = '';
+            addVerseInput();
+        }
+
+        function savePoem(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editingPoemId').value;
+            const title = document.getElementById('poemTitle').value.trim();
+            const category = document.getElementById('poemCategory').value;
+            const meter = document.getElementById('poemMeter').value.trim();
+
+            const verses = [];
+            document.querySelectorAll('.verse-input-row').forEach(row => {
+                const chest = row.querySelector('.chest-input').value.trim();
+                const عجوز = row.querySelector('.ajuz-input').value.trim();
+                if (chest) verses.push({ chest, عجوز });
+            });
+
+            if (verses.length === 0) {
+                showToast("يرجى إدخال سطر شعري واحد على الأقل!", "warning");
+                return;
+            }
+
+            if (editId) {
+                const idx = poems.findIndex(p => p.id === editId);
+                if (idx !== -1) {
+                    poems[idx].title = title;
+                    poems[idx].category = category;
+                    poems[idx].meter = meter;
+                    poems[idx].style = currentEditorStyle;
+                    poems[idx].verses = verses;
+                }
+                showToast("تم تعديل القصيدة بنجاح", "success");
+            } else {
+                const newPoem = {
+                    id: 'p-' + Date.now(),
+                    title,
+                    category,
+                    meter,
+                    style: currentEditorStyle,
+                    date: new Date().toISOString().split('T')[0],
+                    verses
+                };
+                poems.unshift(newPoem);
+                showToast("تمت إضافة القصيدة لسِفْر بنجاح", "success");
+            }
+
+            savePoemsToStorage();
+            resetForm();
+            renderRecentPoems();
+            switchTab('showcase');
+        }
+
+        function editPoem(id) {
+            const poem = poems.find(p => p.id === id);
+            if (!poem) return;
+
+            document.getElementById('editingPoemId').value = poem.id;
+            document.getElementById('formTitle').innerText = 'تعديل القصيدة';
+            document.getElementById('poemTitle').value = poem.title;
+            document.getElementById('poemCategory').value = poem.category;
+            document.getElementById('poemMeter').value = poem.meter || '';
+
+            document.getElementById('versesList').innerHTML = '';
+            poem.verses.forEach(v => addVerseInput(v.chest, v.عجوز || ''));
+
+            switchTab('admin-panel');
+        }
+
+        function deletePoem(id) {
+            if (confirm("هل أنت تأكد من حذف هذه القصيدة من سِفْر؟")) {
+                poems = poems.filter(p => p.id !== id);
+                savePoemsToStorage();
+                renderPoems();
+                renderRecentPoems();
+                showToast("تم حذف القصيدة", "info");
+            }
+        }
+
+        function copyPoemText(id) {
+            const poem = poems.find(p => p.id === id);
+            if (!poem) return;
+
+            let text = `${poem.title}\nمن ديوان: سِفْر\n\n`;
+            poem.verses.forEach(v => {
+                text += (v.عجوز && poem.style === 'two-columns') ? `${v.chest}  |  ${v.عجوز}\n` : `${v.chest}\n`;
+            });
+
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            showToast("تم نسخ أبيات القصيدة بنجاح!", "success");
+        }
+
+        // Backup and Restore (JSON Export / Import)
+        function exportData() {
+            const data = { profile, poems };
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `safar_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast("تم تصدير نسخة من سِفْر بنجاح", "success");
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.profile) profile = parsed.profile;
+                    if (parsed.poems) poems = parsed.poems;
+                    saveProfileToStorage();
+                    savePoemsToStorage();
+                    renderPoems();
+                    renderRecentPoems();
+                    showToast("تم استيراد ديوان سِفْر بنجاح!", "success");
+                } catch(err) {
+                    showToast("ملف النسخة الاحتياطية غير صالح", "warning");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-900 border-emerald-500 text-emerald-200' :
+                            type === 'warning' ? 'bg-amber-900 border-amber-500 text-amber-200' :
+                            'bg-royal-800 border-gold-500 text-gold-300';
+
+            toast.className = `toast border px-4 py-3 rounded-lg shadow-xl font-cairo text-sm flex items-center gap-2 ${bgClass}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-bell'}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
